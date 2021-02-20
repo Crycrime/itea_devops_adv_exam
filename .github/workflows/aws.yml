@@ -8,7 +8,7 @@ on:
 
 jobs:
   terraform:
-    name: 'Terraform'
+    name: 'Terraform AWS'
     runs-on: ubuntu-latest
     steps:
 
@@ -22,17 +22,14 @@ jobs:
 
       - name: Terraform Format
         id: fmt
-        working-directory: 'terraform'
         run: terraform fmt
 
       - name: Terraform Init
         id: init
-        working-directory: 'terraform'
         run: terraform init
 
       - name: Terraform Plan
         id: plan
-        working-directory: 'terraform'
         if: github.event_name == 'pull_request'
         run: terraform plan -no-color
         continue-on-error: true
@@ -61,22 +58,19 @@ jobs:
             })
 
       - name: Terraform Plan Status
-        working-directory: 'terraform'
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
       - name: Terraform Apply
-        working-directory: 'terraform'
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
 
       - name: Terraform Output
-        working-directory: 'terraform'
         id: output
-        run: terraform output > ../terraform.log
+        run: terraform output > ../terraform.output
 
       - name: Upload actifacts
         uses: actions/upload-artifact@v2
         with:
           name: terraform
-          path: terraform.log
+          path: terraform.output
